@@ -1,18 +1,6 @@
 from django.db import models
+from apps.core.models import TimeStampedUUIDModel
 
-# Create your models here.
-# apps/games/models.py
-import uuid
-from django.db import models
-
-
-class TimeStampedUUIDModel(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 class Developer(TimeStampedUUIDModel):
@@ -75,8 +63,7 @@ class Language(TimeStampedUUIDModel):
     name = models.CharField(max_length=100)
 
 
-class AgeRatingBoard(TimeStampedUUIDModel):
-    """ESRB, PEGI, USK, CERO — these differ per region, don't hardcode one scale."""
+class AgeRatingBoard(TimeStampedUUIDModel): 
     name = models.CharField(max_length=50, unique=True)
     region = models.CharField(max_length=100)
 

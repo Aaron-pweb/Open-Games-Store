@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.db import models
+
 from apps.core.models import TimeStampedUUIDModel
 
 
@@ -8,7 +10,7 @@ class Developer(TimeStampedUUIDModel):
     slug = models.SlugField(unique=True, max_length=255)
     website = models.URLField(blank=True)
     country = models.CharField(max_length=2, blank=True)
-    verified = models.BooleanField(default=False)   
+    verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -22,6 +24,66 @@ class Publisher(TimeStampedUUIDModel):
 
     def __str__(self):
         return self.name
+
+
+class DeveloperMembership(TimeStampedUUIDModel):
+    """Links a User to a Developer organization. A user can belong to multiple developers."""
+
+    class MemberRole(models.TextChoices):
+        OWNER = "owner", "Owner"      # Full control over the developer org
+        MEMBER = "member", "Member"   # Can manage games under this developer
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="developer_memberships",
+    )
+    developer = models.ForeignKey(
+        Developer,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=MemberRole.choices,
+        default=MemberRole.MEMBER,
+    )
+
+    class Meta:
+        unique_together = ("user", "developer")
+
+    def __str__(self):
+        return f"{self.user} → {self.developer} ({self.role})"
+
+
+class PublisherMembership(TimeStampedUUIDModel):
+    """Links a User to a Publisher organization. A user can belong to multiple publishers."""
+
+    class MemberRole(models.TextChoices):
+        OWNER = "owner", "Owner"
+        MEMBER = "member", "Member"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="publisher_memberships",
+    )
+    publisher = models.ForeignKey(
+        Publisher,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=MemberRole.choices,
+        default=MemberRole.MEMBER,
+    )
+
+    class Meta:
+        unique_together = ("user", "publisher")
+
+    def __str__(self):
+        return f"{self.user} → {self.publisher} ({self.role})"
 
 
 class Franchise(TimeStampedUUIDModel):
